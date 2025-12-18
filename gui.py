@@ -10,7 +10,7 @@ class RamDiskBuilderGUI:
         self.root.configure(bg="black")
 
         # Memória onde os ficheiros são ligados
-        self.memory_buffer = ""
+        self.memory_buffer = b""
         self.loaded_files = []
 
         # Barra superior com botões
@@ -57,14 +57,15 @@ class RamDiskBuilderGUI:
 
         for path in paths:
             try:
-                data=""
+                data=b""
                 paths=path.split("/")
-                with open(path, "r") as f:
+                with open(path, "rb") as f:
                     
-                    data = str(f.read())
+                    data = f.read()
 
                 # Liga ficheiros em memória (estilo ramdisk)
-                self.memory_buffer =self.memory_buffer +  "\x00\x06\x01\x05"+paths[len(paths)-1]+"\x00\x06\x01\x05" + data
+                l=paths[len(paths)-1].encode("utf-8")
+                self.memory_buffer =self.memory_buffer +  b"\x00\x06\x01\x05"+l+b"\x00\x06\x01\x05" + data
                 self.loaded_files.append(path)
                 
                 self.log(f"[OK] Carregado: {path} ({len(data)} bytes)\n")
@@ -88,8 +89,8 @@ class RamDiskBuilderGUI:
             return
 
         try:
-            self.memory_buffer =self.memory_buffer +  "\x00\x06\x01\x05"
-            with open(path, "w") as f:
+            self.memory_buffer =self.memory_buffer +  b"\x00\x06\x01\x05"
+            with open(path, "wb") as f:
                 f.write(self.memory_buffer)
 
             self.log(f"[OK] Gravado: {path} ({len(self.memory_buffer)} bytes)\n")
@@ -107,4 +108,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = RamDiskBuilderGUI(root)
     root.mainloop()
-
