@@ -1,2 +1,1 @@
-# gui.binary.ramdisk.builder
-builds a ramdisk of a single file binary
+image builder fat12 of a linux system
