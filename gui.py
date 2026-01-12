@@ -53,12 +53,14 @@ class RamDiskBuilderGUI:
             filetypes=[("elf files", "*"), ("All files", "*")]
         )
         if 0==0:
-                os.system("mkdir /mnt/rams > /dev/null")
-                os.system("rm initrd > /dev/null")
-                os.system("cp init initrd > /dev/null")
-                os.system("umount /mnt/rams > /dev/null")
-                os.system("mount -o loop initrd /mnt/rams > /dev/null")
-                
+                os.system("umount /mnt/rams 2>/dev/null")
+                os.system('dd if=/dev/zero of=tmp.img bs=1M count=12 status=progress')
+                os.system("chmod 777 tmp.img")
+                os.system("mkfs.fat -F 12 tmp.img")
+                os.system("chmod 777 tmp.img")
+                os.system("mkdir /mnt/rams 2>/dev/null")
+                os.system("umount /mnt/rams 2>/dev/null")
+                os.system("sudo mount -o loop tmp.img /mnt/rams")
         if not paths:
             return
 
@@ -66,7 +68,8 @@ class RamDiskBuilderGUI:
             #try:
             if 0==0:
                 os.system("cp $1 /mnt/rams ".replace("$1",path))
-                
+                os.system("chmod 777 /mnt/rams/*")
+                os.system("chmod 777 /mnt/rams/*.*")
                 self.log(f"[OK] Carregado: {path} \n")
             #except Exception as e:
             #    self.log(f"[ERRO] {path}: {e}\n")
@@ -89,15 +92,19 @@ class RamDiskBuilderGUI:
         try:
             n=path
             os.system("umount /mnt/rams > /dev/null")
-            os.system('dd if=/dev/zero of="$1" bs=1M count=15 status=progress'.replace("$1",n))
-            os.system("mkfs.fat -F 12 $1".replace("$1",n))
-            os.system('syslinux "$1"'.replace("$1",n))
-            os.system("rm initrd.gz > /dev/null")
-            os.system("gzip initrd > /dev/null")
-            os.system('mcopy -i "$1" syslinux.cfg ::/syslinux.cfg'.replace("$1",n))
-            os.system('mcopy -i "$1" initrd.gz ::/initrd.gz'.replace("$1",n))
-            os.system('mcopy -i "$1" vmlinuz ::/vmlinuz'.replace("$1",n))
-
+            os.system("dd if=/dev/zero of=boot.img bs=1M count=12 status=progress")
+            os.system('chmod 777 boot.img')
+            os.system("mkfs.fat -F 12 boot.img")
+            os.system('chmod 777 boot.img')
+            os.system("syslinux  boot.img")
+            os.system("chmod 777 boot.img")
+            os.system('mcopy -i boot.img syslinux.cfg ::/syslinux.cfg')
+            os.system('mcopy -i boot.img initrd.gz ::/initrd.gz')
+            os.system('mcopy -i boot.img vmlinuz ::/vmlinuz')
+            os.system('chmod 777 boot.img')
+            os.system('chmod 777 $1'.replace("$1",n))
+            os.system('rm $1'.replace("$1",n))
+            os.system('mv tmp.img $1'.replace("$1",n))
         except Exception as e:
             messagebox.showerror("Erro", str(e))
 
@@ -107,9 +114,8 @@ class RamDiskBuilderGUI:
         self.text.delete("1.0", "end")
         self.log("memory clear.\n")
         if 0==0:
-                os.system("mkdir /mnt/rams > /dev/null")
-                os.system("cp init initrd > /dev/null")
-                os.system("umount /mnt/rams > /dev/null")
+                os.system("umount /mnt/rams 2>/dev/null")
+                
 
 
 
